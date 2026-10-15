@@ -2,29 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { NavItem } from "@/lib/nav";
 
-const items = [
-  { href: "/dashboard", label: "Dashboard", short: "Home" },
-  { href: "/dashboard/new-order", label: "New order", short: "Order" },
-  { href: "/dashboard/orders", label: "Orders", short: "Orders" },
-  { href: "/dashboard/add-funds", label: "Add funds", short: "Funds" },
-  { href: "/dashboard/support", label: "Support", short: "Help" },
-];
-
-export function NavLinks({ variant, base = "/dashboard" }: { variant: "side" | "bottom"; base?: string }) {
+export function NavLinks({ variant, items }: { variant: "side" | "bottom"; items: NavItem[] }) {
   const path = usePathname();
-  const to = (href: string) => href.replace("/dashboard", base);
-  const active = (href: string) =>
-    href === "/dashboard" ? path === to(href) : path.startsWith(to(href));
+  const active = (i: NavItem) => (i.exact ? path === i.href : path.startsWith(i.href));
 
   if (variant === "bottom") {
     return (
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border bg-surface/95 backdrop-blur md:hidden">
+      <nav
+        className="fixed inset-x-0 bottom-0 z-40 grid border-t border-border bg-surface/95 backdrop-blur md:hidden"
+        style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
+      >
         {items.map((i) => (
           <Link
             key={i.href}
-            href={to(i.href)}
-            className={`py-3 text-center text-xs ${active(i.href) ? "font-semibold text-accent" : "text-muted"}`}
+            href={i.href}
+            className={`py-3 text-center text-[11px] ${active(i) ? "font-semibold text-accent" : "text-muted"}`}
           >
             {i.short}
           </Link>
@@ -37,9 +31,9 @@ export function NavLinks({ variant, base = "/dashboard" }: { variant: "side" | "
       {items.map((i) => (
         <Link
           key={i.href}
-          href={to(i.href)}
+          href={i.href}
           className={`block rounded-xl px-4 py-2.5 text-sm transition ${
-            active(i.href) ? "bg-primary text-white" : "text-muted hover:bg-surface-2 hover:text-foreground"
+            active(i) ? "bg-primary text-white" : "text-muted hover:bg-surface-2 hover:text-foreground"
           }`}
         >
           {i.label}

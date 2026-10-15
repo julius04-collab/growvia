@@ -2,6 +2,9 @@
 
 Social media marketing services platform. Phase 1: marketing site, services page, legal pages, auth UI.
 
+## Setup
+Full step-by-step (database, keys, email codes, webhooks, testing): [docs/SETUP.md](docs/SETUP.md)
+
 ## Live links
 - Site: https://growvia-one.vercel.app/
 - Sign in: https://growvia-one.vercel.app/login

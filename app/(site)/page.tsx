@@ -13,7 +13,7 @@ const features = [
   { title: "Clear prices in naira", text: "See the exact total before you pay. No hidden fees." },
   { title: "Live order tracking", text: "Pending, in progress, completed. Always visible in your dashboard." },
   { title: "Refill on selected services", text: "Services marked with refill are topped up if the count drops within the stated period." },
-  { title: "Reseller API", text: "Building your own panel? Connect through our API." },
+  { title: "Reseller API (coming soon)", text: "Building your own panel? API access is on the way." },
   { title: "Real support", text: "Open a ticket or message us on WhatsApp." },
 ];
 

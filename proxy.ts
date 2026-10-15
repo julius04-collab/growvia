@@ -9,7 +9,7 @@ export async function proxy(request: NextRequest) {
 
   if (!url || !key) {
     // Auth not configured yet: keep the dashboard closed.
-    if (path.startsWith("/dashboard")) {
+    if (path.startsWith("/dashboard") || path.startsWith("/admin")) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
     return NextResponse.next();
@@ -33,7 +33,7 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && path.startsWith("/dashboard")) {
+  if (!user && (path.startsWith("/dashboard") || path.startsWith("/admin"))) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
   if (user && (path === "/login" || path === "/signup")) {
@@ -43,5 +43,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/signup"],
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/login", "/signup"],
 };
