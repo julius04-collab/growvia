@@ -12,23 +12,28 @@ export function AddFundsForm({
   defaultGateway,
   min,
   max,
+  demo = false,
 }: {
   gateways: ("paystack" | "flutterwave")[];
   defaultGateway: "paystack" | "flutterwave" | null;
   min: number;
   max: number;
+  demo?: boolean;
 }) {
   const [amount, setAmount] = useState("5000");
   const [gateway, setGateway] = useState(defaultGateway ?? gateways[0]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const n = Number(amount);
   const valid = Number.isInteger(n) && n >= min && n <= max;
 
   async function pay(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setNotice("");
     if (!valid) return setError(`Enter an amount between ${naira(min)} and ${naira(max)}.`);
+    if (demo) return setNotice("Demo only: in the live app you would now be sent to the payment page.");
     setBusy(true);
     try {
       const res = await fetch("/api/payments/initialize", {
@@ -87,6 +92,7 @@ export function AddFundsForm({
         </div>
       )}
 
+      {notice && <p role="status" className="rounded-lg bg-accent/10 px-3 py-2 text-sm text-accent">{notice}</p>}
       {error && <p role="alert" className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p>}
       <button type="submit" disabled={busy || !valid} className={`w-full sm:w-auto ${btnPrimary}`}>
         {busy ? "Redirecting…" : `Pay ${valid ? naira(n) : ""}`}

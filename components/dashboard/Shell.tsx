@@ -10,12 +10,14 @@ export function ShellFrame({
   items,
   demo = false,
   badge,
+  accountHref,
   children,
 }: {
   name: string;
   items: NavItem[];
   demo?: boolean;
   badge?: string;
+  accountHref?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -24,7 +26,7 @@ export function ShellFrame({
         <div className="px-2 py-3"><Logo /></div>
         <div className="mt-4"><NavLinks variant="side" items={items} /></div>
       </aside>
-      <div className="flex min-w-0 flex-1 flex-col pb-20 md:pb-0">
+      <div className="flex min-w-0 flex-1 flex-col pb-32 md:pb-0">
         {demo && (
           <div className="bg-amber-300/15 px-4 py-2 text-center text-xs text-amber-200">
             Demo preview with sample data. Nothing here is real.
@@ -38,14 +40,25 @@ export function ShellFrame({
               {demo ? "Viewing as " : "Signed in as "}<span className="text-foreground">{name}</span>
             </p>
           </div>
-          {demo ? (
-            <Link href="/" className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted transition hover:text-foreground">Exit demo</Link>
-          ) : (
-            <div className="flex items-center gap-2">
-              {badge && <Link href="/dashboard" className="text-sm text-muted hover:text-foreground">My dashboard</Link>}
-              <LogoutButton />
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {accountHref && (
+              <Link
+                href={accountHref}
+                aria-label="Account"
+                className="grid h-9 w-9 place-items-center rounded-full bg-primary text-sm font-bold uppercase"
+              >
+                {name.trim().charAt(0) || "U"}
+              </Link>
+            )}
+            {demo ? (
+              <Link href="/" className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted transition hover:text-foreground">Exit demo</Link>
+            ) : (
+              <>
+                {badge && <Link href="/dashboard" className="text-sm text-muted hover:text-foreground">My dashboard</Link>}
+                <LogoutButton />
+              </>
+            )}
+          </div>
         </header>
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 md:px-8">{children}</main>
       </div>
@@ -62,7 +75,7 @@ export async function Shell({ children }: { children: React.ReactNode }) {
     .eq("id", user.id)
     .maybeSingle();
   const name = profile?.full_name || user.user_metadata?.full_name || user.email || "you";
-  return <ShellFrame name={name} items={userNav()}>{children}</ShellFrame>;
+  return <ShellFrame name={name} items={userNav()} accountHref="/dashboard/account">{children}</ShellFrame>;
 }
 
 export function ShellSkeleton() {

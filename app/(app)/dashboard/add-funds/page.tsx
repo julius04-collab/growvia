@@ -1,9 +1,9 @@
 import { requireUser } from "@/lib/auth";
 import { gatewayInfo, MIN_FUND, MAX_FUND } from "@/lib/payments";
 import { naira } from "@/lib/site";
-import { card, when } from "@/lib/ui";
+import { card } from "@/lib/ui";
 import { AddFundsForm } from "@/components/dashboard/AddFundsForm";
-import { StatusChip } from "@/components/dashboard/StatusChip";
+import { PaymentsList, type PaymentItem } from "@/components/dashboard/PaymentsList";
 
 const messages: Record<string, { text: string; cls: string }> = {
   success: { text: "Payment received. Your wallet has been topped up.", cls: "bg-accent/10 text-accent" },
@@ -44,21 +44,7 @@ export default async function AddFundsPage({ searchParams }: { searchParams: Pro
 
       <section>
         <h2 className="mb-3 font-semibold">Recent payments</h2>
-        {!payments?.length ? (
-          <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted">No payments yet.</div>
-        ) : (
-          <div className={`${card} divide-y divide-border overflow-hidden`}>
-            {payments.map((p) => (
-              <div key={p.id} className="flex items-center justify-between gap-3 px-5 py-4 text-sm">
-                <div>
-                  <p className="font-medium">{naira(Number(p.amount))}</p>
-                  <p className="text-xs capitalize text-muted">{p.gateway} · {when(p.created_at)}</p>
-                </div>
-                <StatusChip status={p.status} />
-              </div>
-            ))}
-          </div>
-        )}
+        <PaymentsList payments={(payments ?? []) as PaymentItem[]} />
       </section>
     </div>
   );

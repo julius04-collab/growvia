@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function DemoLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ShellFrame name="Demo user" items={userNav("/demo", false)} demo>
+    <ShellFrame name="Demo user" items={userNav("/demo")} accountHref="/demo/account" demo>
       {children}
     </ShellFrame>
   );
