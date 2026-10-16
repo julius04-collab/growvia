@@ -2,12 +2,15 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { btnPrimary, inputCls } from "@/lib/ui";
+import { btnPrimary } from "@/lib/ui";
+import { PasswordField } from "@/components/auth/PasswordField";
+import { PASSWORD_MESSAGE, passwordOk } from "@/lib/password";
 
 export function ChangePassword() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
+  const [fieldKey, setFieldKey] = useState(0); // new key = empty password box
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -15,21 +18,19 @@ export function ChangePassword() {
     setOk("");
     const form = e.currentTarget;
     const password = String(new FormData(form).get("password") || "");
-    if (password.length < 8) return setError("Use a password with at least 8 characters.");
+    if (!passwordOk(password)) return setError(PASSWORD_MESSAGE);
     setBusy(true);
     const { error } = await createClient().auth.updateUser({ password });
     setBusy(false);
     if (error) return setError(error.message);
     form.reset();
+    setFieldKey((k) => k + 1);
     setOk("Password updated.");
   }
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <label className="block text-sm">
-        <span className="mb-1 block text-muted">New password</span>
-        <input name="password" type="password" autoComplete="new-password" minLength={8} required className={inputCls} />
-      </label>
+      <PasswordField key={fieldKey} label="New password" autoComplete="new-password" rules />
       {error && <p role="alert" className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p>}
       {ok && <p role="status" className="rounded-lg bg-accent/10 px-3 py-2 text-sm text-accent">{ok}</p>}
       <button type="submit" disabled={busy} className={btnPrimary}>{busy ? "Saving…" : "Update password"}</button>

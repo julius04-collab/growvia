@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import { authConfigured } from "@/lib/supabase/env";
 import { btnPrimary } from "@/lib/ui";
 import { Alert, AuthShell, Field } from "./auth/Field";
+import { PasswordField } from "./auth/PasswordField";
+import { PASSWORD_MESSAGE, passwordOk } from "@/lib/password";
 import { VerifyCode } from "./auth/VerifyCode";
 
 export function AuthCard({ mode }: { mode: "login" | "signup" }) {
@@ -28,8 +30,8 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
     const password = String(form.get("password") || "");
     const fullName = String(form.get("name") || "").trim();
 
-    if (isSignup && password.length < 8) {
-      setError("Use a password with at least 8 characters.");
+    if (isSignup && !passwordOk(password)) {
+      setError(PASSWORD_MESSAGE);
       return;
     }
 
@@ -84,14 +86,7 @@ export function AuthCard({ mode }: { mode: "login" | "signup" }) {
       <form onSubmit={onSubmit} className="space-y-4">
         {isSignup && <Field label="Full name" name="name" type="text" autoComplete="name" required />}
         <Field label="Email" name="email" type="email" autoComplete="email" required />
-        <Field
-          label="Password"
-          name="password"
-          type="password"
-          autoComplete={isSignup ? "new-password" : "current-password"}
-          minLength={isSignup ? 8 : undefined}
-          required
-        />
+        <PasswordField label="Password" autoComplete={isSignup ? "new-password" : "current-password"} rules={isSignup} />
         {!isSignup && (
           <div className="-mt-2 text-right text-sm">
             <Link href="/forgot-password" className="text-accent">Forgot password?</Link>

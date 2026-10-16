@@ -29,23 +29,14 @@ Local: copy `.env.example` to `.env.local`. Live: Vercel > Settings > Environmen
 | `PROVIDER_API_URL`, `PROVIDER_API_KEY` | leave empty for now: orders are simulated |
 
 ## 3. Email codes (Supabase > Authentication > Email Templates)
-Sign-up and password-reset use a code the user types in. Edit two templates so they show the code:
+Sign-up and password-reset use a 6-digit code the user pastes or types. Use the designed templates in `supabase/email-templates/`:
 
-**Confirm signup** (subject: `Your Growvia code`)
-```html
-<h2>Confirm your email</h2>
-<p>Your Growvia verification code is:</p>
-<h1>{{ .Token }}</h1>
-<p>If you did not sign up, ignore this email.</p>
-```
-**Reset password** (subject: `Reset your Growvia password`)
-```html
-<h2>Reset your password</h2>
-<p>Your Growvia reset code is:</p>
-<h1>{{ .Token }}</h1>
-<p>If you did not ask for this, ignore this email.</p>
-```
-Also: Authentication > Sign In / Providers > Email: keep "Confirm email" ON.
+1. **Confirm signup**: open `supabase/email-templates/confirm-signup.html`, copy ALL of it, paste it into the "Confirm signup" template's message body, and set the subject to `{{ .Token }} is your Growvia verification code`.
+2. **Reset password**: same with `reset-password.html`, subject `{{ .Token }} is your Growvia password reset code`.
+3. Authentication > Sign In / Providers > Email: keep "Confirm email" ON and set **Email OTP Length to 6** (the code boxes in the app are six wide). The templates say the code lasts 1 hour, which is Supabase's default "Email OTP Expiration" (3600).
+
+Do not put `{{ .ConfirmationURL }}` back in these templates. The code is the only way in, and the code is one unbroken string of digits so a single touch-and-hold selects all of it.
+
 Supabase's built-in sender only allows a few emails per hour. Before real users, add your own SMTP (Project Settings > Authentication > SMTP), for example Resend.
 
 ## 4. Webhooks (optional but recommended)

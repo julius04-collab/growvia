@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { authConfigured } from "@/lib/supabase/env";
 import { btnPrimary } from "@/lib/ui";
 import { Alert, AuthShell, Field } from "./auth/Field";
+import { PasswordField } from "./auth/PasswordField";
 
 export function AdminLogin() {
   const router = useRouter();
@@ -34,7 +35,7 @@ export function AdminLogin() {
     <AuthShell title="Admin sign in" subtitle="For Growvia staff only.">
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Email" name="email" type="email" autoComplete="email" required />
-        <Field label="Password" name="password" type="password" autoComplete="current-password" required />
+        <PasswordField label="Password" autoComplete="current-password" />
         <Alert error={error} />
         <button type="submit" disabled={busy} className={`w-full ${btnPrimary}`}>{busy ? "Please wait…" : "Sign in"}</button>
       </form>

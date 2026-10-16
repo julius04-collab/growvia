@@ -7,6 +7,9 @@ import { createClient } from "@/lib/supabase/client";
 import { authConfigured } from "@/lib/supabase/env";
 import { btnPrimary } from "@/lib/ui";
 import { Alert, AuthShell, Field } from "./Field";
+import { CodeInput } from "./CodeInput";
+import { PasswordField } from "./PasswordField";
+import { PASSWORD_MESSAGE, passwordOk } from "@/lib/password";
 import { useCooldown } from "./useResend";
 
 export function ForgotPassword() {
@@ -15,6 +18,7 @@ export function ForgotPassword() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [code, setCode] = useState("");
   const cooldown = useCooldown();
 
   async function sendCode(address: string) {
@@ -47,10 +51,14 @@ export function ForgotPassword() {
     if (!email) return;
     setError("");
     const form = new FormData(e.currentTarget);
-    const token = String(form.get("code") || "").replace(/\s/g, "");
+    const token = code;
     const password = String(form.get("password") || "");
-    if (password.length < 8) {
-      setError("Use a password with at least 8 characters.");
+    if (token.length !== 6) {
+      setError("Enter the 6-digit code from your email.");
+      return;
+    }
+    if (!passwordOk(password)) {
+      setError(PASSWORD_MESSAGE);
       return;
     }
     setBusy(true);
@@ -58,6 +66,7 @@ export function ForgotPassword() {
     const { error: vErr } = await supabase.auth.verifyOtp({ email, token, type: "recovery" });
     if (vErr) {
       setBusy(false);
+      setCode("");
       setError("That code is wrong or has expired. Check it or request a new one.");
       return;
     }
@@ -89,10 +98,13 @@ export function ForgotPassword() {
   }
 
   return (
-    <AuthShell title="Set a new password" subtitle={`If an account exists for ${email}, we sent it a code. Enter the code and choose a new password.`}>
+    <AuthShell title="Set a new password" subtitle={`If an account exists for ${email}, we sent it a 6-digit code. Enter it and choose a new password.`}>
       <form onSubmit={reset} className="space-y-4">
-        <Field label="Code from your email" name="code" inputMode="numeric" autoComplete="one-time-code" minLength={6} maxLength={10} required autoFocus />
-        <Field label="New password" name="password" type="password" autoComplete="new-password" minLength={8} required />
+        <div>
+          <p className="mb-2 text-sm text-muted">6-digit code from your email</p>
+          <CodeInput value={code} onChange={(c) => { setCode(c); if (error) setError(""); }} autoFocus invalid={Boolean(error) && error.includes("code")} disabled={busy} />
+        </div>
+        <PasswordField label="New password" autoComplete="new-password" rules />
         <Alert error={error} notice={notice} />
         <button type="submit" disabled={busy} className={`w-full ${btnPrimary}`}>
           {busy ? "Saving…" : "Reset password"}
@@ -106,7 +118,8 @@ export function ForgotPassword() {
             setError("");
             try {
               await sendCode(email);
-              setNotice("We sent you a new code.");
+              setCode("");
+              setNotice("We sent you a new code. Use the newest one.");
             } catch (err) {
               setError(err instanceof Error ? err.message : "Could not send the code.");
             }
