@@ -7,7 +7,7 @@ import { createTicket } from "@/app/(app)/dashboard/support/actions";
 import type { FormState } from "@/lib/types";
 import { btnPrimary, inputCls } from "@/lib/ui";
 
-export function TicketForm({ demo = false }: { demo?: boolean }) {
+export function TicketForm({ demo = false, defaultSubject = "" }: { demo?: boolean; defaultSubject?: string }) {
   const router = useRouter();
   const ref = useRef<HTMLFormElement>(null);
   const [demoOk, setDemoOk] = useState(false);
@@ -29,7 +29,7 @@ export function TicketForm({ demo = false }: { demo?: boolean }) {
     >
       <label className="block text-sm">
         <span className="mb-1 block text-muted">Subject</span>
-        <input name="subject" className={inputCls} maxLength={120} required placeholder="e.g. Order #12 has not started" />
+        <input name="subject" defaultValue={defaultSubject} className={inputCls} maxLength={120} required placeholder="e.g. Order #12 has not started" />
       </label>
       <label className="block text-sm">
         <span className="mb-1 block text-muted">What happened?</span>

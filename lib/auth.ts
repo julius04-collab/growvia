@@ -18,7 +18,7 @@ export async function requireUser() {
 export async function requireAdmin() {
   const { supabase, user } = await requireUser();
   const { data } = await supabase.from("profiles").select("is_admin").eq("id", user.id).maybeSingle();
-  if (!data?.is_admin) redirect("/dashboard");
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) redirect("/dashboard");
+  if (!data?.is_admin) redirect("/access-denied");
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) redirect("/access-denied");
   return { user, admin: createAdminClient() };
 }

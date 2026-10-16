@@ -40,6 +40,43 @@ const paths: Record<string, React.ReactNode> = {
       <path d="M2 10h20" />
     </>
   ),
+  undo: <path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3" />,
+  gear: (
+    <>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1" />
+    </>
+  ),
+  server: (
+    <>
+      <rect x="3" y="3" width="18" height="7" rx="2" />
+      <rect x="3" y="14" width="18" height="7" rx="2" />
+      <path d="M7 6.5h.01M7 17.5h.01" />
+    </>
+  ),
+  grid: <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" />,
+  lock: (
+    <>
+      <rect x="4" y="10" width="16" height="11" rx="2" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+    </>
+  ),
+  alert: <path d="M12 3 2 20h20zM12 10v4M12 17.5h.01" />,
+  search: (
+    <>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-4-4" />
+    </>
+  ),
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </>
+  ),
+  check: <path d="M5 12.5 10 17.5 19 7" />,
+  x: <path d="M6 6l12 12M18 6 6 18" />,
+  tools: <path d="M14.7 6.3a4 4 0 0 0-5 5L3 18l3 3 6.7-6.7a4 4 0 0 0 5-5l-2.4 2.4-2.6-.6-.6-2.6z" />,
 };
 
 export function Icon({ name, className = "h-5 w-5", stroke = 2 }: { name: string; className?: string; stroke?: number }) {
@@ -53,6 +90,7 @@ export function Icon({ name, className = "h-5 w-5", stroke = 2 }: { name: string
 export function NavLinks({ variant, items }: { variant: "side" | "bottom"; items: NavItem[] }) {
   const path = usePathname();
   const active = (i: NavItem) => (i.exact ? path === i.href : path.startsWith(i.href));
+  const side = items.filter((i) => i.desktop !== false);
 
   if (variant === "bottom") {
     const mobile = items.filter((i) => i.mobile !== false);
@@ -95,7 +133,7 @@ export function NavLinks({ variant, items }: { variant: "side" | "bottom"; items
 
   return (
     <nav className="space-y-1">
-      {items.map((i) => (
+      {side.map((i) => (
         <Link
           key={i.href}
           href={i.href}

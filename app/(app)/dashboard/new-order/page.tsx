@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/auth";
 import { providerMode } from "@/lib/provider";
+import { getSettings } from "@/lib/settings";
 import type { DbService } from "@/lib/types";
 import { NewOrderForm } from "@/components/dashboard/NewOrderForm";
 
@@ -15,6 +16,7 @@ export default async function NewOrderPage() {
     supabase.from("profiles").select("balance").eq("id", user.id).maybeSingle(),
   ]);
 
+  const { settings } = await getSettings(supabase);
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold tracking-tight">New order</h1>
@@ -22,6 +24,7 @@ export default async function NewOrderPage() {
         services={(services ?? []) as DbService[]}
         balance={Number(profile?.balance ?? 0)}
         simulated={providerMode() === "mock"}
+        paused={settings.ordersPaused}
       />
     </div>
   );

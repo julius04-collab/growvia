@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { naira } from "@/lib/site";
 import { card, when } from "@/lib/ui";
 import { StatusChip } from "./StatusChip";
 import { PlatformBadge } from "./PlatformBadge";
+import { StateCard } from "@/components/ui/StateCard";
 
 export type OrderItem = {
   id: number;
@@ -23,7 +25,7 @@ const tabs = [
   { key: "other", label: "Other", test: (s: string) => s === "partial" || s === "cancelled" },
 ];
 
-export function OrdersView({ orders }: { orders: OrderItem[] }) {
+export function OrdersView({ orders, detailBase }: { orders: OrderItem[]; detailBase?: string }) {
   const [tab, setTab] = useState("all");
   const current = tabs.find((t) => t.key === tab) ?? tabs[0];
   const list = orders.filter((o) => current.test(o.status));
@@ -48,16 +50,22 @@ export function OrdersView({ orders }: { orders: OrderItem[] }) {
       </div>
 
       {list.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border p-10 text-center">
-          <p className="font-medium">{orders.length === 0 ? "No orders yet" : "Nothing here"}</p>
-          <p className="mt-1 text-sm text-muted">
-            {orders.length === 0 ? "Your orders will show up here." : "No orders match this filter."}
-          </p>
+        <div className="rounded-2xl border border-dashed border-border">
+          <StateCard
+            compact
+            icon="list"
+            title={orders.length === 0 ? "No orders yet" : "Nothing here"}
+            text={orders.length === 0 ? "Place your first order and track it here." : "No orders match this filter."}
+            actions={orders.length === 0 && detailBase ? [{ label: "Place an order", href: "/dashboard/new-order", primary: true }] : []}
+          />
         </div>
       ) : (
         <div className={`${card} divide-y divide-border overflow-hidden`}>
-          {list.map((o) => (
-            <div key={o.id} className="flex items-center gap-3 px-4 py-4 text-sm">
+          {list.map((o) => {
+            const Row = detailBase ? Link : "div";
+            const rowProps = detailBase ? { href: `${detailBase}/${o.id}` } : {};
+            return (
+            <Row key={o.id} {...(rowProps as { href: string })} className={`flex items-center gap-3 px-4 py-4 text-sm ${detailBase ? "transition hover:bg-surface-2" : ""}`}>
               <PlatformBadge name={o.service_name} />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">{o.service_name}</p>
@@ -67,8 +75,9 @@ export function OrdersView({ orders }: { orders: OrderItem[] }) {
                 {o.link && <p className="truncate text-xs text-muted/70">{o.link}</p>}
               </div>
               <StatusChip status={o.status} />
-            </div>
-          ))}
+            </Row>
+            );
+          })}
         </div>
       )}
     </div>

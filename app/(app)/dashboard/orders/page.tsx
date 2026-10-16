@@ -22,7 +22,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           Order #{placed} placed. Its status updates here automatically.
         </p>
       )}
-      <OrdersView orders={list} />
+      <OrdersView orders={list} detailBase="/dashboard/orders" />
     </div>
   );
 }

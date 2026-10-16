@@ -6,9 +6,10 @@ import { useRouter } from "next/navigation";
 import { naira } from "@/lib/site";
 import { btnPrimary, card, inputCls } from "@/lib/ui";
 import type { DbService } from "@/lib/types";
+import { StateCard } from "@/components/ui/StateCard";
 import { placeOrder } from "@/app/(app)/dashboard/new-order/actions";
 
-export function NewOrderForm({ services, balance, simulated, demo = false }: { services: DbService[]; balance: number; simulated: boolean; demo?: boolean }) {
+export function NewOrderForm({ services, balance, simulated, paused = false, demo = false }: { services: DbService[]; balance: number; simulated: boolean; paused?: boolean; demo?: boolean }) {
   const router = useRouter();
   const platforms = useMemo(() => Array.from(new Set(services.map((s) => s.platform))), [services]);
   const [platform, setPlatform] = useState(platforms[0] ?? "");
@@ -17,6 +18,7 @@ export function NewOrderForm({ services, balance, simulated, demo = false }: { s
   const [link, setLink] = useState("");
   const [qty, setQty] = useState("");
   const [error, setError] = useState("");
+  const [kind, setKind] = useState<"paused" | "unavailable" | null>(null);
   const [demoDone, setDemoDone] = useState(false);
   const [pending, start] = useTransition();
 
@@ -35,19 +37,35 @@ export function NewOrderForm({ services, balance, simulated, demo = false }: { s
   function submit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setKind(null);
     if (!selected) return setError("Choose a service.");
     if (link.trim().length < 4) return setError("Paste the link to your profile or post.");
     if (!qtyValid) return setError(`Quantity must be between ${selected.min_qty.toLocaleString()} and ${selected.max_qty.toLocaleString()}.`);
     if (demo) return setDemoDone(true);
     start(async () => {
       const res = await placeOrder({ serviceId: selected.id, link: link.trim(), quantity: q });
-      if (res.ok) router.push(`/dashboard/orders?placed=${res.orderId}`);
-      else setError(res.error);
+      if (res.ok) router.push(`/dashboard/orders/${res.orderId}`);
+      else {
+        setError(res.error);
+        setKind(res.kind ?? null);
+      }
     });
   }
 
   if (!services.length) {
-    return <div className={`${card} p-8 text-center text-sm text-muted`}>No services are available yet. Please check back soon.</div>;
+    return (
+      <div className={card}>
+        <StateCard icon="tools" tone="warn" title="Services are unavailable right now" text="No services can be ordered at the moment. Please check back soon. Your wallet is safe." actions={[{ label: "Contact support", href: "/dashboard/support", primary: true }]} />
+      </div>
+    );
+  }
+
+  if (paused && !demo) {
+    return (
+      <div className={card}>
+        <StateCard icon="clock" tone="warn" title="New orders are paused" text="We are not taking new orders for a short while. Nothing has been charged. Please check back soon." actions={[{ label: "Back to dashboard", href: "/dashboard" }, { label: "Contact support", href: "/dashboard/support" }]} />
+      </div>
+    );
   }
 
   return (
@@ -135,7 +153,9 @@ export function NewOrderForm({ services, balance, simulated, demo = false }: { s
             Demo only: no order was placed. In the live app this charges your wallet and starts the order.
           </p>
         )}
-        {error && <p role="alert" className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p>}
+        {error && (
+          <p role="alert" className={`rounded-lg px-3 py-2 text-sm ${kind ? "bg-amber-300/10 text-amber-200" : "bg-red-500/10 text-red-300"}`}>{error}</p>
+        )}
         <button type="submit" disabled={pending || short} className={`w-full ${btnPrimary}`}>
           {pending ? "Placing order…" : "Place order"}
         </button>

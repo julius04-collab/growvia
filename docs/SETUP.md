@@ -71,3 +71,12 @@ The wallet is already credited when the customer returns from the payment page. 
 - Automatic refund of the undelivered part of a "Partial" order (admin can cancel and refund the whole order).
 - Manual wallet credit for a payment that arrived with the wrong amount (it stays Pending and is logged).
 - The public /services page still shows fixed sample prices, not the live database prices.
+
+
+## Screens added in the latest update
+
+Customer: order details (`/dashboard/orders/[id]`), payment result (`/dashboard/add-funds/result`), live prices on `/services`, loading, error, access-denied and not-found pages, "orders paused" and "service unavailable" states.
+
+Admin (sign in at `/admin-login`): order details, customer details with wallet adjustment, refunds (partial and full, unconfirmed payments), supplier (balance, health, provider service list), settings (pause orders, announcement, support contacts, low-balance alert).
+
+**You must re-run `supabase/setup-all.sql`** (safe to run again) to create the `settings` and `wallet_adjustments` tables and the partial-refund and wallet-adjustment functions. Until you do, those admin screens show a notice instead of working, and everything else keeps working.

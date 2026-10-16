@@ -1,5 +1,8 @@
+import { Suspense } from "react";
+import Link from "next/link";
 import type { Metadata } from "next";
-import { platforms, sampleServices, naira } from "@/lib/site";
+import { naira } from "@/lib/site";
+import { getPublicServices } from "@/lib/supabase/public";
 
 export const metadata: Metadata = {
   title: "Services",
@@ -10,12 +13,38 @@ export default function ServicesPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-14">
       <h1 className="text-4xl font-bold tracking-tight">Services</h1>
+      <Suspense fallback={<Skeleton />}>
+        <Catalogue />
+      </Suspense>
+      <div className="mt-12 rounded-3xl bg-primary px-6 py-10 text-center">
+        <h2 className="text-2xl font-bold">Ready to order?</h2>
+        <p className="mx-auto mt-2 max-w-md text-white/80">Create a free account, add funds in naira and place your first order.</p>
+        <Link href="/signup" className="mt-5 inline-block rounded-xl bg-accent px-7 py-3 font-semibold text-black">Create free account</Link>
+      </div>
+    </div>
+  );
+}
+
+function Skeleton() {
+  return (
+    <div className="mt-8 space-y-4" aria-busy="true" aria-label="Loading services">
+      {[0, 1, 2].map((i) => <div key={i} className="h-40 animate-pulse rounded-2xl bg-surface" />)}
+    </div>
+  );
+}
+
+async function Catalogue() {
+  const { services, live } = await getPublicServices();
+  const platforms = Array.from(new Set(services.map((s) => s.platform)));
+  return (
+    <>
       <p className="mt-2 max-w-2xl text-muted">
-        Prices are per 1,000 and shown in naira. Rates shown here are sample pricing and may change. Final prices appear in your dashboard before you pay.
+        Prices are per 1,000 and shown in naira.{" "}
+        {live ? "These are our current rates. The exact total is shown before you pay." : "Rates shown here are sample pricing and may change. Final prices appear in your dashboard before you pay."}
       </p>
 
       {platforms.map((p) => {
-        const rows = sampleServices.filter((s) => s.platform === p);
+        const rows = services.filter((s) => s.platform === p);
         if (!rows.length) return null;
         return (
           <section key={p} className="mt-10">
@@ -49,6 +78,6 @@ export default function ServicesPage() {
           </section>
         );
       })}
-    </div>
+    </>
   );
 }

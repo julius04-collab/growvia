@@ -15,8 +15,58 @@ async function call(params: Record<string, string>) {
     method: "POST",
     body: new URLSearchParams({ key: key()!, ...params }),
     cache: "no-store",
+    signal: AbortSignal.timeout(15000),
   });
-  return res.json();
+  const json = await res.json().catch(() => null);
+  if (json == null) throw new Error(`Provider returned an unreadable response (HTTP ${res.status}).`);
+  return json;
+}
+
+// True when the provider refused because OUR balance with them is too low.
+export function isSupplierFundsError(message: string) {
+  return /(not enough|insufficient|low).{0,20}(fund|balance|credit)|balance.{0,20}(low|too low|not enough)/i.test(message);
+}
+
+export function providerHost() {
+  try {
+    return url() ? new URL(url()!).host : null;
+  } catch {
+    return null;
+  }
+}
+
+export type ProviderBalance = { balance: number; currency: string };
+
+export async function providerBalance(): Promise<ProviderBalance> {
+  if (providerMode() === "mock") throw new Error("No provider is connected yet.");
+  const json = await call({ action: "balance" });
+  if (json.error) throw new Error(String(json.error));
+  return { balance: Number(json.balance), currency: String(json.currency ?? "") };
+}
+
+export type ProviderService = {
+  service: string;
+  name: string;
+  category: string;
+  rate: number;
+  min: number;
+  max: number;
+  refill: boolean;
+};
+
+export async function providerServices(): Promise<ProviderService[]> {
+  if (providerMode() === "mock") throw new Error("No provider is connected yet.");
+  const json = await call({ action: "services" });
+  if (!Array.isArray(json)) throw new Error(String(json?.error ?? "Provider did not return a service list."));
+  return json.map((r: Record<string, unknown>) => ({
+    service: String(r.service),
+    name: String(r.name ?? ""),
+    category: String(r.category ?? "Other"),
+    rate: Number(r.rate),
+    min: Number(r.min),
+    max: Number(r.max),
+    refill: r.refill === true || r.refill === "true" || r.refill === 1,
+  }));
 }
 
 export async function providerAddOrder(input: {

@@ -2,9 +2,11 @@
 
 import { requireUser } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { providerAddOrder } from "@/lib/provider";
+import { isSupplierFundsError, providerAddOrder } from "@/lib/provider";
+import { getSettings } from "@/lib/settings";
 
-type Result = { ok: true; orderId: number } | { ok: false; error: string };
+// kind: "paused" = admin paused new orders, "unavailable" = the supplier could not take it (we refunded).
+type Result = { ok: true; orderId: number } | { ok: false; error: string; kind?: "paused" | "unavailable" };
 
 export async function placeOrder(input: { serviceId: number; link: string; quantity: number }): Promise<Result> {
   const { supabase } = await requireUser();
@@ -13,6 +15,11 @@ export async function placeOrder(input: { serviceId: number; link: string; quant
   const serviceId = Math.floor(Number(input.serviceId));
   if (link.length < 4 || link.length > 500) return { ok: false, error: "Enter a valid link." };
   if (!Number.isFinite(quantity) || quantity < 1) return { ok: false, error: "Enter a valid quantity." };
+
+  const { settings } = await getSettings(supabase);
+  if (settings.ordersPaused) {
+    return { ok: false, kind: "paused", error: "New orders are paused for a short while. Your wallet was not charged." };
+  }
 
   // Price, balance check and charge all happen inside the database function.
   const { data: orderId, error } = await supabase.rpc("place_order", {
@@ -28,9 +35,15 @@ export async function placeOrder(input: { serviceId: number; link: string; quant
     const res = await providerAddOrder({ providerServiceId: svc?.provider_service_id, link, quantity });
     await admin.from("orders").update({ provider_order_id: res.id }).eq("id", orderId);
     return { ok: true, orderId: Number(orderId) };
-  } catch {
+  } catch (e) {
     // The provider refused it, so give the money back.
     await admin.rpc("refund_order", { p_order_id: orderId });
-    return { ok: false, error: "We could not place this order right now, and you were not charged. Please try again." };
+    const msg = e instanceof Error ? e.message : "";
+    if (isSupplierFundsError(msg)) console.error("SUPPLIER BALANCE TOO LOW: top up your provider account.", msg);
+    return {
+      ok: false,
+      kind: "unavailable",
+      error: "This service is temporarily unavailable, and you were not charged. Please try again later or choose another service.",
+    };
   }
 }
