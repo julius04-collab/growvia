@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { isoAgo } from "@/lib/time";
-import { providerBalance, providerHost, providerMode, providerServices, type ProviderService } from "@/lib/provider";
+import { providerBalance, providerHost, providerKind, providerMode, providerServices, type ProviderService } from "@/lib/provider";
 import { getSettings } from "@/lib/settings";
 import { card, when } from "@/lib/ui";
 import { Notice, StateCard } from "@/components/ui/StateCard";
@@ -66,7 +66,7 @@ PROVIDER_API_KEY=your-key`}</pre>
             <div className={`${card} p-5`}>
               <p className="text-xs text-muted">Connected to</p>
               <p className="mt-1 break-all text-sm font-semibold">{providerHost() ?? "-"}</p>
-              <p className="text-xs text-muted">API key is set (never shown)</p>
+              <p className="text-xs text-muted">API key is set (never shown) · {providerKind() === "pawaboost" ? "PawaBoost API" : "standard SMM API"}</p>
             </div>
             <div className={`${card} p-5`}>
               <p className="text-xs text-muted">Failed at supplier (24h)</p>
@@ -75,6 +75,13 @@ PROVIDER_API_KEY=your-key`}</pre>
             </div>
           </section>
 
+          {providerKind() === "pawaboost" && (
+            <Notice tone={process.env.PAWABOOST_WEBHOOK_SECRET ? "good" : "warn"}>
+              {process.env.PAWABOOST_WEBHOOK_SECRET
+                ? <>PawaBoost webhook is ready. Webhook URL: <b className="break-all">{process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "https://your-site"}/api/webhooks/pawaboost</b>. Order pages also poll PawaBoost, so statuses still update if a webhook is missed.</>
+                : <>Webhook secret is not set. Add PAWABOOST_WEBHOOK_SECRET in Vercel (optional: order statuses are polled either way).</>}
+            </Notice>
+          )}
           {low && bal?.ok && (
             <Notice tone="bad">
               Supplier balance is below your alert level ({cfg.settings.lowBalanceAlert.toLocaleString()}). Top up your provider account, or orders will start failing. You can{" "}
@@ -123,7 +130,7 @@ PROVIDER_API_KEY=your-key`}</pre>
             <Notice tone="bad">Could not load the service list: {list && !list.ok ? list.error : ""}</Notice>
           ) : (
             <>
-              <p className="text-sm text-muted">{list.value.length} services. The <b>ID</b> column is what you enter as “Provider service ID”. Rates are per 1,000 in your provider&apos;s currency.</p>
+              <p className="text-sm text-muted">{list.value.length} services. The <b>ID</b> column is what you enter as “Provider service ID”. Rates are in your provider&apos;s currency.{providerKind() === "pawaboost" && " PawaBoost does not say whether its price is per unit or per 1,000 (their example suggests per 1,000). Place one small test order to confirm before setting your prices."}</p>
               <div className="space-y-2">
                 {Array.from(groups.entries()).slice(0, 60).map(([cat, rows]) => (
                   <details key={cat} className={`${card} group`}>

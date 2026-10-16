@@ -80,3 +80,14 @@ Customer: order details (`/dashboard/orders/[id]`), payment result (`/dashboard/
 Admin (sign in at `/admin-login`): order details, customer details with wallet adjustment, refunds (partial and full, unconfirmed payments), supplier (balance, health, provider service list), settings (pause orders, announcement, support contacts, low-balance alert).
 
 **You must re-run `supabase/setup-all.sql`** (safe to run again) to create the `settings` and `wallet_adjustments` tables and the partial-refund and wallet-adjustment functions. Until you do, those admin screens show a notice instead of working, and everything else keeps working.
+
+
+## PawaBoost supplier
+
+1. In PawaBoost, create an API key. Copy it (starts with `pk_live_`).
+2. In Vercel add: `PROVIDER_API_URL=https://pawaboost.com/api/v1` and `PROVIDER_API_KEY=<your key>`. Redeploy.
+3. Webhook (optional): on the key in PawaBoost, set the webhook URL to `https://<your-site>/api/webhooks/pawaboost` and a secret. Add the same secret in Vercel as `PAWABOOST_WEBHOOK_SECRET`. Use the "test webhook" button in PawaBoost; it should succeed.
+4. Open Admin → Supplier. You should see your PawaBoost balance and their service list. Copy each service ID into Admin → Services → "Provider service ID". Orders for unmapped services fail and are refunded.
+5. Place one small real test order and compare the charge to the price. PawaBoost's docs do not say if the price is per unit or per 1,000.
+
+Notes: PawaBoost allows 60 requests a minute per key, and webhooks are not retried. Statuses are also polled, so a missed webhook only delays an update.
