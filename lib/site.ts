@@ -3,7 +3,7 @@ export const site = {
   name: "Growvia",
   tagline: "Grow faster. Order in seconds.",
   email: "growvia87@gmail.com",
-  whatsapp: "+234 000 000 0000",
+  whatsapp: "+234 812 408 2240",
   address: "Lagos, Nigeria",
   updated: "October 2026",
 };
