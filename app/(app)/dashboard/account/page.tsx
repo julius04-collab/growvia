@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/auth";
 import { card } from "@/lib/ui";
+import { ThemeRow } from "@/components/ThemeToggle";
 import { ChangePassword } from "@/components/dashboard/ChangePassword";
 
 export default async function AccountPage() {
@@ -16,6 +17,7 @@ export default async function AccountPage() {
           <div className="flex justify-between"><dt className="text-muted">Email</dt><dd>{user.email}</dd></div>
         </dl>
       </section>
+      <section className={`${card} p-6`}><ThemeRow /></section>
       <section className={`${card} p-6`}>
         <h2 className="mb-4 font-semibold">Change password</h2>
         <ChangePassword />

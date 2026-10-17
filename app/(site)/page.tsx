@@ -57,7 +57,7 @@ export default function Home() {
               Social media marketing services
             </span>
             <h1 className="mt-5 text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
-              Grow your social media presence, <span className="text-accent">in seconds.</span>
+              Grow your social media presence, <span className="hl-accent">in seconds.</span>
             </h1>
             <p className="mt-5 max-w-lg text-lg text-muted">
               Order followers, likes and views for Instagram, TikTok, YouTube and more from one clean dashboard. Pay in naira. Track every order.

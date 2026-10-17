@@ -20,6 +20,8 @@
   --foreground: #12121c;
   --muted: #5d5d76;
 }
+.hl-accent { color: var(--accent); }
+:root[data-theme="light"] .hl-accent { color: #0b0b14; background: var(--accent); border-radius: 0.5rem; padding: 0 0.3em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 /* Lime is unreadable as text on white, so use a deep green there. Buttons keep the lime fill. */
 :root[data-theme="light"] .text-accent { color: #3d7a00; }
 :root[data-theme="light"] .bg-accent\/10 { background-color: #e6f6cc; }

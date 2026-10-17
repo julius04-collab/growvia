@@ -14,6 +14,7 @@ export function ImportPicker({ rows, action, currency }: { rows: PickRow[]; acti
   const [markup, setMarkup] = useState("30");
   const inNaira = !currency || currency.toUpperCase() === "NGN";
   const [fx, setFx] = useState(inNaira ? "1" : "");
+  const [showImported, setShowImported] = useState(false);
   const [picked, setPicked] = useState<Set<string>>(new Set());
 
   const platforms = useMemo(() => ["All", ...Array.from(new Set(rows.map((r) => normalizePlatform(r.platform, r.name))))], [rows]);
@@ -21,11 +22,13 @@ export function ImportPicker({ rows, action, currency }: { rows: PickRow[]; acti
     () =>
       rows.filter(
         (r) =>
+          (showImported || !r.imported) &&
           (platform === "All" || normalizePlatform(r.platform, r.name) === platform) &&
           (!q || `${r.name} ${r.category}`.toLowerCase().includes(q.toLowerCase())),
       ),
-    [rows, q, platform],
+    [rows, q, platform, showImported],
   );
+  const importedCount = rows.filter((r) => r.imported).length;
   const selectable = visible.filter((r) => !r.imported);
   const m = Number(markup) >= 0 ? Number(markup) : 0;
   const rate = Number(fx) > 0 ? Number(fx) : 0;
@@ -77,8 +80,15 @@ export function ImportPicker({ rows, action, currency }: { rows: PickRow[]; acti
         </div>
       </div>
 
+      {importedCount > 0 && (
+        <label className="flex items-center gap-2 text-sm text-muted">
+          <input type="checkbox" checked={showImported} onChange={(e) => setShowImported(e.target.checked)} className="accent-[#b6ff3b]" />
+          Also show the {importedCount} service{importedCount === 1 ? "" : "s"} you already imported
+        </label>
+      )}
+
       <div className={`${card} divide-y divide-border overflow-hidden`}>
-        {visible.length === 0 && <p className="p-8 text-center text-sm text-muted">No services match.</p>}
+        {visible.length === 0 && <p className="p-8 text-center text-sm text-muted">{rows.length > 0 && rows.every((r) => r.imported) ? "You have imported every service from this supplier." : "No services match."}</p>}
         {visible.slice(0, 200).map((r) => (
           <label key={r.id} className={`flex items-start gap-3 px-4 py-3 text-sm ${r.imported ? "opacity-50" : "cursor-pointer hover:bg-surface-2"}`}>
             <input type="checkbox" disabled={r.imported} checked={picked.has(r.id)} onChange={() => toggle(r.id)} className="mt-1 accent-[#b6ff3b]" />

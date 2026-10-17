@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
-import { ThemeToggle } from "./ThemeToggle";
 
 const links = [
   { href: "/services", label: "Services" },
@@ -22,7 +21,6 @@ export function Header() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <ThemeToggle />
           <Link href="/login" className="rounded-lg px-3 py-2 text-sm text-muted transition hover:text-foreground">
             Log in
           </Link>

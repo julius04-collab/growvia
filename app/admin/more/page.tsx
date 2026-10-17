@@ -2,6 +2,7 @@ import Link from "next/link";
 import { adminNav } from "@/lib/nav";
 import { card } from "@/lib/ui";
 import { Icon } from "@/components/dashboard/NavLinks";
+import { ThemeRow } from "@/components/ThemeToggle";
 
 export default function AdminMore() {
   const items = adminNav.filter((i) => i.desktop !== false);
@@ -20,6 +21,7 @@ export default function AdminMore() {
           My customer dashboard
         </Link>
       </div>
+      <section className={`${card} p-5`}><ThemeRow /></section>
     </div>
   );
 }

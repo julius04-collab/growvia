@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
 import { site } from "@/lib/site";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function Footer() {
   return (
@@ -17,6 +18,7 @@ export function Footer() {
         <FooterCol title="Legal" items={[["Terms of Service", "/terms"], ["Privacy Policy", "/privacy"], ["Refund Policy", "/refund"], ["Contact", "/contact"]]} />
       </div>
       <div className="border-t border-border px-4 py-5 text-center text-xs text-muted">
+        <div className="mb-3 flex justify-center"><ThemeToggle /></div>
         © 2026 {site.name}. All rights reserved.
       </div>
     </footer>

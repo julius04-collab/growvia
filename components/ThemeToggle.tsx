@@ -43,3 +43,28 @@ export function ThemeToggle() {
     </button>
   );
 }
+
+// A full-width settings row: "Appearance" with a Light / Dark switch.
+export function ThemeRow() {
+  const light = useSyncExternalStore(subscribe, isLight, () => false);
+  function set(next: boolean) {
+    if (next) document.documentElement.setAttribute("data-theme", "light");
+    else document.documentElement.removeAttribute("data-theme");
+    try {
+      localStorage.setItem("growvia-theme", next ? "light" : "dark");
+    } catch {}
+  }
+  const base = "flex-1 rounded-lg px-4 py-2 text-sm font-medium transition";
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div>
+        <p className="font-semibold">Appearance</p>
+        <p className="text-sm text-muted">Choose a light or dark look. Saved on this device.</p>
+      </div>
+      <div className="flex w-44 shrink-0 gap-1 rounded-xl border border-border bg-surface-2 p-1" role="group" aria-label="Theme">
+        <button type="button" onClick={() => set(true)} aria-pressed={light} className={`${base} ${light ? "bg-primary text-white" : "text-muted"}`}>Light</button>
+        <button type="button" onClick={() => set(false)} aria-pressed={!light} className={`${base} ${!light ? "bg-primary text-white" : "text-muted"}`}>Dark</button>
+      </div>
+    </div>
+  );
+}
