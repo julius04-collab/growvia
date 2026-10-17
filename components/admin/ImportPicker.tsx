@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { btnGhost, btnPrimary, card, inputCls } from "@/lib/ui";
+import { useFormStatus } from "react-dom";
 import { normalizePlatform, priceWithMarkup } from "@/lib/import-services";
 
 export type PickRow = { id: string; name: string; category: string; platform: string; rate: number; min: number; max: number; delivery: string; imported: boolean };
@@ -103,8 +104,17 @@ export function ImportPicker({ rows, action, currency }: { rows: PickRow[]; acti
       </label>
 
       <div className="sticky bottom-24 md:bottom-4">
-        <button disabled={picked.size === 0} className={`w-full ${btnPrimary}`}>Import {picked.size} service{picked.size === 1 ? "" : "s"}</button>
+        <SubmitButton count={picked.size} />
       </div>
     </form>
+  );
+}
+
+function SubmitButton({ count }: { count: number }) {
+  const { pending } = useFormStatus();
+  return (
+    <button disabled={count === 0 || pending} className={`w-full ${btnPrimary}`}>
+      {pending ? "Importing… this can take a few seconds" : `Import ${count} service${count === 1 ? "" : "s"}`}
+    </button>
   );
 }

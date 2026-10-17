@@ -3,7 +3,7 @@ const map: [string, string, string][] = [
   ["TikTok", "TT", "#25f4ee"],
   ["YouTube", "YT", "#ff4d4d"],
   ["Facebook", "FB", "#4c8dff"],
-  ["X (Twitter)", "X", "#ffffff"],
+  ["X (Twitter)", "X", "#8a8aa3"],
   ["Telegram", "TG", "#37aee2"],
 ];
 

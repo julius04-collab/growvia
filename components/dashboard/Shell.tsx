@@ -3,6 +3,7 @@ import { Logo } from "@/components/Logo";
 import { requireUser } from "@/lib/auth";
 import { userNav, type NavItem } from "@/lib/nav";
 import { NavLinks } from "./NavLinks";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { LogoutButton } from "./LogoutButton";
 
 export function ShellFrame({
@@ -41,6 +42,7 @@ export function ShellFrame({
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             {accountHref && (
               <Link
                 href={accountHref}

@@ -36,14 +36,20 @@ export function priceWithMarkup(supplierRatePer1000: number, markupPercent: numb
   return Math.ceil(supplierRatePer1000 * fx * (1 + markupPercent / 100));
 }
 
+// The database stores quantities as 32-bit integers, and some suppliers list absurd maximums.
+const INT_MAX = 2_000_000_000;
+function clampInt(n: number): number {
+  return Number.isFinite(n) ? Math.min(INT_MAX, Math.floor(n)) : INT_MAX;
+}
+
 export function toServiceRow(s: ProviderService, markupPercent: number, fx = 1) {
   const platform = normalizePlatform(s.platform, `${s.category} ${s.name}`);
   return {
     platform,
     name: cleanName(s.name, platform),
     price_per_1000: priceWithMarkup(s.rate, markupPercent, fx),
-    min_qty: Math.max(1, Math.floor(s.min)),
-    max_qty: Math.max(Math.floor(s.min), Math.floor(s.max)),
+    min_qty: clampInt(Math.max(1, s.min)),
+    max_qty: clampInt(Math.max(s.min, s.max)),
     start_time: s.delivery || "Varies",
     refill: s.refill,
     provider_service_id: s.service,

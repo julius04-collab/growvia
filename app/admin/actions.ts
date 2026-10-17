@@ -206,19 +206,32 @@ export async function importServices(formData: FormData) {
   const have = new Set((existing ?? []).map((r) => String(r.provider_service_id)));
 
   const rows = list.filter((s) => picked.has(s.service) && !have.has(s.service) && s.rate >= 0 && s.max >= s.min).map((s) => toServiceRow(s, markup, fx));
-  if (rows.length) {
-    const { error } = await admin.from("services").insert(rows);
-    if (error) flash(back, `Could not save: ${error.message}`, false);
+  let saved = 0;
+  let firstError = "";
+  for (let i = 0; i < rows.length; i += 50) {
+    const chunk = rows.slice(i, i + 50);
+    const { error } = await admin.from("services").insert(chunk);
+    if (!error) {
+      saved += chunk.length;
+      continue;
+    }
+    // One bad row should not sink the batch: retry this chunk one row at a time.
+    for (const row of chunk) {
+      const { error: e } = await admin.from("services").insert(row);
+      if (e) firstError ||= `${row.name}: ${e.message}`;
+      else saved += 1;
+    }
   }
+  if (rows.length > 0 && saved === 0) flash(back, `Could not save any service. ${firstError}`, false);
   let hidden = 0;
-  if (hideSamples && (rows.length > 0 || have.size > 0)) {
+  if (hideSamples && (saved > 0 || have.size > 0)) {
     const { data } = await admin.from("services").update({ active: false }).is("provider_service_id", null).eq("active", true).select("id");
     hidden = data?.length ?? 0;
   }
   refresh();
-  const skipped = picked.size - rows.length;
+  const skipped = picked.size - saved;
   flash(
     "/admin/services",
-    `Imported ${rows.length} service(s)${skipped > 0 ? `, skipped ${skipped} already imported or invalid` : ""}${hidden ? `, hid ${hidden} sample service(s)` : ""}.`,
+    `Imported ${saved} service(s)${skipped > 0 ? `, skipped ${skipped} already imported or invalid${firstError ? ` (first problem: ${firstError})` : ""}` : ""}${hidden ? `, hid ${hidden} sample service(s)` : ""}.`,
   );
 }

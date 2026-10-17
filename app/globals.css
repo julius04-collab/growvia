@@ -11,6 +11,30 @@
   --accent: #b6ff3b;
 }
 
+/* Light theme: same tokens, switched by data-theme on <html> */
+:root[data-theme="light"] {
+  --background: #f6f6fb;
+  --surface: #ffffff;
+  --surface-2: #eeeef6;
+  --border: #d9d9e6;
+  --foreground: #12121c;
+  --muted: #5d5d76;
+}
+/* Lime is unreadable as text on white, so use a deep green there. Buttons keep the lime fill. */
+:root[data-theme="light"] .text-accent { color: #3d7a00; }
+:root[data-theme="light"] .bg-accent\/10 { background-color: #e6f6cc; }
+:root[data-theme="light"] .text-red-300 { color: #c0262d; }
+:root[data-theme="light"] .text-amber-300,
+:root[data-theme="light"] .text-amber-200 { color: #8a5a00; }
+:root[data-theme="light"] .text-orange-300,
+:root[data-theme="light"] .text-orange-200 { color: #b34700; }
+:root[data-theme="light"] .text-sky-300 { color: #0b6aa8; }
+:root[data-theme="light"] .ring-amber-300\/40 { --tw-ring-color: #d9a21a; }
+:root[data-theme="light"] .bg-amber-300\/15 { background-color: #fdeec2; }
+:root[data-theme="light"] .bg-amber-300\/20 { background-color: #fbe3a0; }
+:root[data-theme="light"] { color-scheme: light; }
+:root:not([data-theme="light"]) { color-scheme: dark; }
+
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
