@@ -5,10 +5,23 @@ import { addService, saveService } from "../actions";
 
 const small = `${inputCls} py-2`;
 
-export default async function AdminServices({ searchParams }: { searchParams: Promise<FlashParams> }) {
+const PAGE = 50;
+
+export default async function AdminServices({ searchParams }: { searchParams: Promise<FlashParams & { q?: string; page?: string }> }) {
   const flash = await searchParams;
   const { admin } = await requireAdmin();
-  const { data } = await admin.from("services").select("*").order("platform").order("id");
+  const q = (flash.q ?? "").trim().slice(0, 60).replace(/[%,()]/g, " ");
+  const page = Math.max(1, Number(flash.page) || 1);
+
+  let query = admin.from("services").select("*", { count: "exact" }).order("platform").order("id").range((page - 1) * PAGE, page * PAGE - 1);
+  if (q) query = query.or(`name.ilike.%${q}%,platform.ilike.%${q}%`);
+  const { data, count: matching } = await query;
+
+  const total = (await admin.from("services").select("id", { count: "exact", head: true })).count ?? 0;
+  const live = (await admin.from("services").select("id", { count: "exact", head: true }).eq("active", true)).count ?? 0;
+  const fromSupplier = (await admin.from("services").select("id", { count: "exact", head: true }).not("provider_service_id", "is", null)).count ?? 0;
+  const pages = Math.max(1, Math.ceil((matching ?? 0) / PAGE));
+  const link = (p: number) => `/admin/services?${new URLSearchParams({ ...(q ? { q } : {}), page: String(p) })}`;
 
   return (
     <div className="space-y-8">
@@ -20,6 +33,19 @@ export default async function AdminServices({ searchParams }: { searchParams: Pr
       </div>
 
       <Flash {...flash} />
+
+      <div className="grid grid-cols-3 gap-3 text-center text-sm">
+        <div className={`${card} p-4`}><p className="text-2xl font-bold">{total}</p><p className="text-muted">Total</p></div>
+        <div className={`${card} p-4`}><p className="text-2xl font-bold">{live}</p><p className="text-muted">Live for customers</p></div>
+        <div className={`${card} p-4`}><p className="text-2xl font-bold">{fromSupplier}</p><p className="text-muted">Imported from supplier</p></div>
+      </div>
+
+      <form className="flex gap-2">
+        <input name="q" defaultValue={q} placeholder="Search services, e.g. tiktok followers" className={`${small} flex-1`} />
+        <button className="rounded-xl border border-border px-4 py-2 text-sm hover:bg-surface-2">Search</button>
+      </form>
+      <p className="text-sm text-muted">{matching ?? 0} match{matching === 1 ? "" : "es"} · page {page} of {pages}</p>
+
       <div className="space-y-3">
         {(data ?? []).map((s) => (
           <form key={s.id} action={saveService} className={`${card} grid gap-3 p-4 text-sm sm:grid-cols-6`}>
@@ -36,6 +62,13 @@ export default async function AdminServices({ searchParams }: { searchParams: Pr
           </form>
         ))}
       </div>
+
+      {pages > 1 && (
+        <div className="flex items-center justify-between text-sm">
+          {page > 1 ? <a href={link(page - 1)} className="rounded-xl border border-border px-4 py-2 hover:bg-surface-2">← Previous</a> : <span />}
+          {page < pages ? <a href={link(page + 1)} className="rounded-xl border border-border px-4 py-2 hover:bg-surface-2">Next →</a> : <span />}
+        </div>
+      )}
 
       <form action={addService} className={`${card} grid gap-3 p-5 text-sm sm:grid-cols-3`}>
         <h2 className="font-semibold sm:col-span-3">Add a service</h2>

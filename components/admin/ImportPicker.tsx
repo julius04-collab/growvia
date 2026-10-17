@@ -14,13 +14,13 @@ export function ImportPicker({ rows, action, currency }: { rows: PickRow[]; acti
   const [markup, setMarkup] = useState("30");
   const inNaira = !currency || currency.toUpperCase() === "NGN";
   const [fx, setFx] = useState(inNaira ? "1" : "");
-  const [showImported, setShowImported] = useState(false);
+  const [showImported, setShowImported] = useState(true);
   const [picked, setPicked] = useState<Set<string>>(new Set());
 
   const platforms = useMemo(() => ["All", ...Array.from(new Set(rows.map((r) => normalizePlatform(r.platform, r.name))))], [rows]);
   const visible = useMemo(
     () =>
-      rows.filter(
+      [...rows].sort((a, b) => Number(a.imported) - Number(b.imported)).filter(
         (r) =>
           (showImported || !r.imported) &&
           (platform === "All" || normalizePlatform(r.platform, r.name) === platform) &&
@@ -73,7 +73,7 @@ export function ImportPicker({ rows, action, currency }: { rows: PickRow[]; acti
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted">{visible.length} shown · <b className="text-foreground">{picked.size}</b> ticked</p>
+        <p className="text-sm text-muted">{rows.length} from supplier · {importedCount} imported · {rows.length - importedCount} new · {visible.length} shown · <b className="text-foreground">{picked.size}</b> ticked</p>
         <div className="flex gap-2">
           <button type="button" className={btnGhost} onClick={() => setPicked((s) => new Set([...s, ...selectable.map((r) => r.id)]))}>Tick all shown</button>
           <button type="button" className={btnGhost} onClick={() => setPicked(new Set())}>Clear</button>
@@ -83,7 +83,7 @@ export function ImportPicker({ rows, action, currency }: { rows: PickRow[]; acti
       {importedCount > 0 && (
         <label className="flex items-center gap-2 text-sm text-muted">
           <input type="checkbox" checked={showImported} onChange={(e) => setShowImported(e.target.checked)} className="accent-[#b6ff3b]" />
-          Also show the {importedCount} service{importedCount === 1 ? "" : "s"} you already imported
+          Show the {importedCount} service{importedCount === 1 ? "" : "s"} you already imported (they can&apos;t be ticked again)
         </label>
       )}
 
@@ -93,8 +93,8 @@ export function ImportPicker({ rows, action, currency }: { rows: PickRow[]; acti
           <label key={r.id} className={`flex items-start gap-3 px-4 py-3 text-sm ${r.imported ? "opacity-50" : "cursor-pointer hover:bg-surface-2"}`}>
             <input type="checkbox" disabled={r.imported} checked={picked.has(r.id)} onChange={() => toggle(r.id)} className="mt-1 accent-[#b6ff3b]" />
             <span className="min-w-0 flex-1">
-              <span className="block break-words font-medium">{r.name}</span>
-              <span className="block text-xs text-muted">{r.category} · {r.min.toLocaleString()} – {r.max.toLocaleString()}{r.delivery ? ` · ${r.delivery}` : ""}{r.imported ? " · already imported" : ""}</span>
+              <span className="block break-words font-medium">{r.name}{r.imported && <span className="ml-2 rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">✓ Imported</span>}</span>
+              <span className="block text-xs text-muted">{r.category} · {r.min.toLocaleString()} – {r.max.toLocaleString()}{r.delivery ? ` · ${r.delivery}` : ""}</span>
             </span>
             <span className="whitespace-nowrap text-right text-xs">
               <span className="block text-muted">cost {r.rate.toLocaleString()} {currency}</span>
