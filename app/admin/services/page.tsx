@@ -1,10 +1,12 @@
 import { requireAdmin } from "@/lib/auth";
 import { card, inputCls, btnPrimary } from "@/lib/ui";
+import { Flash, type FlashParams } from "@/components/admin/Flash";
 import { addService, saveService } from "../actions";
 
 const small = `${inputCls} py-2`;
 
-export default async function AdminServices() {
+export default async function AdminServices({ searchParams }: { searchParams: Promise<FlashParams> }) {
+  const flash = await searchParams;
   const { admin } = await requireAdmin();
   const { data } = await admin.from("services").select("*").order("platform").order("id");
 
@@ -17,6 +19,7 @@ export default async function AdminServices() {
         </p>
       </div>
 
+      <Flash {...flash} />
       <div className="space-y-3">
         {(data ?? []).map((s) => (
           <form key={s.id} action={saveService} className={`${card} grid gap-3 p-4 text-sm sm:grid-cols-6`}>

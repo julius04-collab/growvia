@@ -111,7 +111,7 @@ PROVIDER_API_KEY=your-key`}</pre>
           <Notice tone="good">Every active service is mapped to a provider service.</Notice>
         ) : (
           <>
-            <p className="text-sm text-muted">{live ? "Orders for these will fail until you map them." : "Map these before going live."} Find the ID in the list below, then enter it on the Services page.</p>
+            <p className="text-sm text-muted">{live ? "Orders for these will fail until you map them." : "Map these before going live."} Use <b>Import services</b> below to add real ones with the right IDs.</p>
             <div className={`${card} divide-y divide-border overflow-hidden`}>
               {(unmapped.data ?? []).map((s) => (
                 <Link key={s.id} href="/admin/services" className="flex justify-between px-5 py-3 text-sm transition hover:bg-surface-2">
@@ -125,7 +125,10 @@ PROVIDER_API_KEY=your-key`}</pre>
 
       {live && (
         <section className="space-y-3">
-          <h2 className="font-semibold">Supplier service list</h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-semibold">Supplier service list</h2>
+            <Link href="/admin/supplier/import" className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-black">Import services</Link>
+          </div>
           {!list?.ok ? (
             <Notice tone="bad">Could not load the service list: {list && !list.ok ? list.error : ""}</Notice>
           ) : (

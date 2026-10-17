@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
-import { providerStatus } from "@/lib/provider";
+import { providerServices, providerStatus } from "@/lib/provider";
+import { toServiceRow } from "@/lib/import-services";
 import { verifyAndCredit } from "@/lib/payments";
 
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
@@ -179,4 +180,43 @@ export async function saveSettings(formData: FormData) {
   }
   refresh();
   flash("/admin/settings", "Settings saved.");
+}
+
+// Imports the picked supplier services into our catalogue with a markup. Prices are re-read from the
+// supplier here on the server, never taken from the browser.
+export async function importServices(formData: FormData) {
+  const { admin } = await requireAdmin();
+  const back = "/admin/supplier/import";
+  const picked = new Set(formData.getAll("pick").map(String));
+  const markup = Number(formData.get("markup"));
+  const hideSamples = formData.get("hide_samples") === "on";
+  if (picked.size === 0) flash(back, "Tick at least one service to import.", false);
+  if (picked.size > 300) flash(back, "Import at most 300 services at a time.", false);
+  if (!(markup >= 0 && markup <= 1000)) flash(back, "Markup must be between 0 and 1000 percent.", false);
+
+  let list;
+  try {
+    list = await providerServices();
+  } catch (e) {
+    flash(back, `Could not reach the supplier: ${e instanceof Error ? e.message : "unknown error"}`, false);
+  }
+  const { data: existing } = await admin.from("services").select("provider_service_id").not("provider_service_id", "is", null);
+  const have = new Set((existing ?? []).map((r) => String(r.provider_service_id)));
+
+  const rows = list.filter((s) => picked.has(s.service) && !have.has(s.service) && s.rate >= 0 && s.max >= s.min).map((s) => toServiceRow(s, markup));
+  if (rows.length) {
+    const { error } = await admin.from("services").insert(rows);
+    if (error) flash(back, `Could not save: ${error.message}`, false);
+  }
+  let hidden = 0;
+  if (hideSamples && (rows.length > 0 || have.size > 0)) {
+    const { data } = await admin.from("services").update({ active: false }).is("provider_service_id", null).eq("active", true).select("id");
+    hidden = data?.length ?? 0;
+  }
+  refresh();
+  const skipped = picked.size - rows.length;
+  flash(
+    "/admin/services",
+    `Imported ${rows.length} service(s)${skipped > 0 ? `, skipped ${skipped} already imported or invalid` : ""}${hidden ? `, hid ${hidden} sample service(s)` : ""}.`,
+  );
 }

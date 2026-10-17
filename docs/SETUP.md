@@ -82,3 +82,8 @@ Admin (sign in at `/admin-login`): order details, customer details with wallet a
 5. Place one small real test order and compare the charge to the price. PawaBoost's docs do not say if the price is per unit or per 1,000.
 
 Notes: PawaBoost allows 60 requests a minute per key, and webhooks are not retried. Statuses are also polled, so a missed webhook only delays an update.
+
+
+## Getting real services on the site
+
+The 11 services created by the SQL are placeholders with no supplier behind them. To replace them: Admin -> Supplier -> **Import services**. Tick the services you want to sell, set your markup, keep "Hide the placeholder sample services" ticked, and import. Prices can be edited afterwards under Admin -> Services. The public /services page and the customer order form read from this list.

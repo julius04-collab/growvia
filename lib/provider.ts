@@ -58,6 +58,8 @@ export type ProviderService = {
   min: number;
   max: number;
   refill: boolean;
+  platform?: string; // PawaBoost only
+  delivery?: string; // PawaBoost only, e.g. "0-1 Hour"
 };
 
 function assertLive() {
@@ -168,6 +170,8 @@ export async function providerServices(): Promise<ProviderService[]> {
       min: Number(r.minQuantity),
       max: Number(r.maxQuantity),
       refill: false,
+      platform: r.platform ? String(r.platform) : undefined,
+      delivery: r.deliveryTime ? String(r.deliveryTime) : undefined,
     }));
   }
   const json = await smm({ action: "services" });
