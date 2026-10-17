@@ -9,7 +9,8 @@ import "server-only";
 export type OrderStatus = "pending" | "in_progress" | "completed" | "partial" | "cancelled";
 
 const url = () => (process.env.PROVIDER_API_URL ?? "").trim().replace(/\/+$/, "");
-const key = () => (process.env.PROVIDER_API_KEY ?? "").trim();
+// Tolerates a pasted "Bearer " prefix or quotes; the code adds "Bearer " itself.
+const key = () => (process.env.PROVIDER_API_KEY ?? "").trim().replace(/^["']|["']$/g, "").replace(/^bearer\s+/i, "").trim();
 export const providerMode = () => (url() && key() ? "live" : "mock");
 export const providerKind = (): "pawaboost" | "smm" =>
   process.env.PROVIDER_TYPE === "pawaboost" || (process.env.PROVIDER_TYPE !== "smm" && /pawaboost/i.test(url())) ? "pawaboost" : "smm";
