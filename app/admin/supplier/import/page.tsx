@@ -7,6 +7,9 @@ import { ImportPicker, type PickRow } from "@/components/admin/ImportPicker";
 import { card } from "@/lib/ui";
 import { importServices } from "../../actions";
 
+// Big catalogues take a while to save, so allow the import action up to a minute.
+export const maxDuration = 60;
+
 export default async function ImportServicesPage({ searchParams }: { searchParams: Promise<FlashParams> }) {
   const flash = await searchParams;
   const { admin } = await requireAdmin();

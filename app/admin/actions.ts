@@ -192,7 +192,7 @@ export async function importServices(formData: FormData) {
   const fx = Number(formData.get("fx") || 1);
   const hideSamples = formData.get("hide_samples") === "on";
   if (picked.size === 0) flash(back, "Tick at least one service to import.", false);
-  if (picked.size > 300) flash(back, "Import at most 300 services at a time.", false);
+  if (picked.size > 20000) flash(back, "That is too many at once. Narrow it down by platform and import in two or three rounds.", false);
   if (!(markup >= 0 && markup <= 1000)) flash(back, "Markup must be between 0 and 1000 percent.", false);
   if (!(fx > 0 && fx <= 100000)) flash(back, "Enter how many naira 1 unit of the supplier currency is worth.", false);
 
@@ -208,8 +208,8 @@ export async function importServices(formData: FormData) {
   const rows = list.filter((s) => picked.has(s.service) && !have.has(s.service) && s.rate >= 0 && s.max >= s.min).map((s) => toServiceRow(s, markup, fx));
   let saved = 0;
   let firstError = "";
-  for (let i = 0; i < rows.length; i += 50) {
-    const chunk = rows.slice(i, i + 50);
+  for (let i = 0; i < rows.length; i += 200) {
+    const chunk = rows.slice(i, i + 200);
     const { error } = await admin.from("services").insert(chunk);
     if (!error) {
       saved += chunk.length;
