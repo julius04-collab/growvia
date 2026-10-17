@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/auth";
 import { providerServices, providerStatus } from "@/lib/provider";
 import { toServiceRow } from "@/lib/import-services";
 import { verifyAndCredit } from "@/lib/payments";
+import { fetchAll } from "@/lib/paged";
 
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 const num = (f: FormData, k: string) => Number(f.get(k));
@@ -202,8 +203,8 @@ export async function importServices(formData: FormData) {
   } catch (e) {
     flash(back, `Could not reach the supplier: ${e instanceof Error ? e.message : "unknown error"}`, false);
   }
-  const { data: existing } = await admin.from("services").select("provider_service_id").not("provider_service_id", "is", null);
-  const have = new Set((existing ?? []).map((r) => String(r.provider_service_id)));
+  const existing = await fetchAll<{ provider_service_id: string }>((a, b) => admin.from("services").select("provider_service_id").not("provider_service_id", "is", null).order("id").range(a, b));
+  const have = new Set(existing.map((r) => String(r.provider_service_id)));
 
   const rows = list.filter((s) => picked.has(s.service) && !have.has(s.service) && s.rate >= 0 && s.max >= s.min).map((s) => toServiceRow(s, markup, fx));
   let saved = 0;

@@ -5,6 +5,7 @@ import { Notice, StateCard } from "@/components/ui/StateCard";
 import { Flash, type FlashParams } from "@/components/admin/Flash";
 import { ImportPicker, type PickRow } from "@/components/admin/ImportPicker";
 import { card } from "@/lib/ui";
+import { fetchAll } from "@/lib/paged";
 import { importServices } from "../../actions";
 
 // Big catalogues take a while to save, so allow the import action up to a minute.
@@ -30,8 +31,8 @@ export default async function ImportServicesPage({ searchParams }: { searchParam
     error = e instanceof Error ? e.message : "Unknown error";
   }
   const currency = await providerBalance().then((b) => b.currency).catch(() => "");
-  const { data: existing } = await admin.from("services").select("provider_service_id").not("provider_service_id", "is", null);
-  const have = new Set((existing ?? []).map((r) => String(r.provider_service_id)));
+  const existing = await fetchAll<{ provider_service_id: string }>((a, b) => admin.from("services").select("provider_service_id").not("provider_service_id", "is", null).order("id").range(a, b));
+  const have = new Set(existing.map((r) => String(r.provider_service_id)));
 
   const rows: PickRow[] = (list ?? []).map((s) => ({
     id: s.service,

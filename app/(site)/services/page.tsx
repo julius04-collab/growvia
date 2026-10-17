@@ -44,8 +44,9 @@ async function Catalogue() {
       </p>
 
       {platforms.map((p) => {
-        const rows = services.filter((s) => s.platform === p);
-        if (!rows.length) return null;
+        const all = services.filter((s) => s.platform === p);
+        if (!all.length) return null;
+        const rows = all.slice(0, 25);
         return (
           <section key={p} className="mt-10">
             <h2 className="mb-3 text-xl font-semibold">{p}</h2>
@@ -75,6 +76,9 @@ async function Catalogue() {
                 </tbody>
               </table>
             </div>
+            {all.length > rows.length && (
+              <p className="mt-2 text-sm text-muted">Showing {rows.length} of {all.length} {p} services. Create a free account to see them all.</p>
+            )}
           </section>
         );
       })}
