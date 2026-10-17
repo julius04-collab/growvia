@@ -189,10 +189,12 @@ export async function importServices(formData: FormData) {
   const back = "/admin/supplier/import";
   const picked = new Set(formData.getAll("pick").map(String));
   const markup = Number(formData.get("markup"));
+  const fx = Number(formData.get("fx") || 1);
   const hideSamples = formData.get("hide_samples") === "on";
   if (picked.size === 0) flash(back, "Tick at least one service to import.", false);
   if (picked.size > 300) flash(back, "Import at most 300 services at a time.", false);
   if (!(markup >= 0 && markup <= 1000)) flash(back, "Markup must be between 0 and 1000 percent.", false);
+  if (!(fx > 0 && fx <= 100000)) flash(back, "Enter how many naira 1 unit of the supplier currency is worth.", false);
 
   let list;
   try {
@@ -203,7 +205,7 @@ export async function importServices(formData: FormData) {
   const { data: existing } = await admin.from("services").select("provider_service_id").not("provider_service_id", "is", null);
   const have = new Set((existing ?? []).map((r) => String(r.provider_service_id)));
 
-  const rows = list.filter((s) => picked.has(s.service) && !have.has(s.service) && s.rate >= 0 && s.max >= s.min).map((s) => toServiceRow(s, markup));
+  const rows = list.filter((s) => picked.has(s.service) && !have.has(s.service) && s.rate >= 0 && s.max >= s.min).map((s) => toServiceRow(s, markup, fx));
   if (rows.length) {
     const { error } = await admin.from("services").insert(rows);
     if (error) flash(back, `Could not save: ${error.message}`, false);

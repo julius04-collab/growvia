@@ -11,6 +11,8 @@ export function ImportPicker({ rows, action, currency }: { rows: PickRow[]; acti
   const [q, setQ] = useState("");
   const [platform, setPlatform] = useState("All");
   const [markup, setMarkup] = useState("30");
+  const inNaira = !currency || currency.toUpperCase() === "NGN";
+  const [fx, setFx] = useState(inNaira ? "1" : "");
   const [picked, setPicked] = useState<Set<string>>(new Set());
 
   const platforms = useMemo(() => ["All", ...Array.from(new Set(rows.map((r) => normalizePlatform(r.platform, r.name))))], [rows]);
@@ -25,6 +27,7 @@ export function ImportPicker({ rows, action, currency }: { rows: PickRow[]; acti
   );
   const selectable = visible.filter((r) => !r.imported);
   const m = Number(markup) >= 0 ? Number(markup) : 0;
+  const rate = Number(fx) > 0 ? Number(fx) : 0;
 
   function toggle(id: string) {
     setPicked((s) => {
@@ -39,12 +42,20 @@ export function ImportPicker({ rows, action, currency }: { rows: PickRow[]; acti
     <form action={action} className="space-y-5">
       {Array.from(picked).map((id) => <input key={id} type="hidden" name="pick" value={id} />)}
 
-      <div className={`${card} grid gap-4 p-5 text-sm sm:grid-cols-3`}>
+      <div className={`${card} grid gap-4 p-5 text-sm sm:grid-cols-2`}>
         <label className="block">
           <span className="mb-1 block text-muted">Your markup (%)</span>
           <input name="markup" type="number" min="0" max="1000" step="1" value={markup} onChange={(e) => setMarkup(e.target.value)} className={inputCls} />
           <span className="mt-1 block text-xs text-muted">Added on top of the supplier price. You can still edit each price later.</span>
         </label>
+        {!inNaira && (
+          <label className="block">
+            <span className="mb-1 block text-muted">1 {currency} = how many naira?</span>
+            <input name="fx" type="number" min="0" step="any" value={fx} onChange={(e) => setFx(e.target.value)} placeholder="e.g. today's rate" className={inputCls} required />
+            <span className="mt-1 block text-xs text-muted">Your supplier charges in {currency}. Prices below are converted to naira with this rate.</span>
+          </label>
+        )}
+        {inNaira && <input type="hidden" name="fx" value="1" />}
         <label className="block">
           <span className="mb-1 block text-muted">Search</span>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. followers" className={inputCls} />
@@ -76,7 +87,7 @@ export function ImportPicker({ rows, action, currency }: { rows: PickRow[]; acti
             </span>
             <span className="whitespace-nowrap text-right text-xs">
               <span className="block text-muted">cost {r.rate.toLocaleString()} {currency}</span>
-              <span className="block text-sm font-semibold">you sell ₦{priceWithMarkup(r.rate, m).toLocaleString()}</span>
+              <span className="block text-sm font-semibold">{rate > 0 ? `you sell ₦${priceWithMarkup(r.rate, m, rate).toLocaleString()}` : "enter the rate above"}</span>
             </span>
           </label>
         ))}

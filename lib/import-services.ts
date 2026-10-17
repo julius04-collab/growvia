@@ -31,16 +31,17 @@ export function cleanName(name: string, platform: string): string {
   return (n || name).trim().slice(0, 120);
 }
 
-export function priceWithMarkup(supplierRatePer1000: number, markupPercent: number): number {
-  return Math.ceil(supplierRatePer1000 * (1 + markupPercent / 100));
+// fx = naira per 1 unit of the supplier's currency (1 when the supplier already charges in naira).
+export function priceWithMarkup(supplierRatePer1000: number, markupPercent: number, fx = 1): number {
+  return Math.ceil(supplierRatePer1000 * fx * (1 + markupPercent / 100));
 }
 
-export function toServiceRow(s: ProviderService, markupPercent: number) {
+export function toServiceRow(s: ProviderService, markupPercent: number, fx = 1) {
   const platform = normalizePlatform(s.platform, `${s.category} ${s.name}`);
   return {
     platform,
     name: cleanName(s.name, platform),
-    price_per_1000: priceWithMarkup(s.rate, markupPercent),
+    price_per_1000: priceWithMarkup(s.rate, markupPercent, fx),
     min_qty: Math.max(1, Math.floor(s.min)),
     max_qty: Math.max(Math.floor(s.min), Math.floor(s.max)),
     start_time: s.delivery || "Varies",
