@@ -1,20 +1,21 @@
 import Link from "next/link";
 import { platforms, sampleServices, naira, site } from "@/lib/site";
+import { FeatureIcon, FloatingChips, GrowthIllustration, PlatformTile, StepIcon } from "@/components/home/visuals";
 
 const steps = [
-  { n: "1", title: "Create an account", text: "Sign up with your email in under a minute." },
-  { n: "2", title: "Add funds", text: "Top up your wallet in naira by card or bank transfer." },
-  { n: "3", title: "Place an order", text: "Pick a service, paste your link, choose a quantity." },
-  { n: "4", title: "Track it", text: "Watch your order status update from your dashboard." },
+  { n: "1", icon: "user" as const, title: "Create an account", text: "Sign up with your email in under a minute." },
+  { n: "2", icon: "wallet" as const, title: "Add funds", text: "Top up your wallet in naira by card or bank transfer." },
+  { n: "3", icon: "link" as const, title: "Place an order", text: "Pick a service, paste your link, choose a quantity." },
+  { n: "4", icon: "chart" as const, title: "Track it", text: "Watch your order status update from your dashboard." },
 ];
 
 const features = [
-  { title: "Everything on one screen", text: "Place an order in a few taps: platform, service, link, quantity, done." },
-  { title: "Clear prices in naira", text: "See the exact total before you pay. No hidden fees." },
-  { title: "Live order tracking", text: "Pending, in progress, completed. Always visible in your dashboard." },
-  { title: "Refill on selected services", text: "Services marked with refill are topped up if the count drops within the stated period." },
-  { title: "Reseller API (coming soon)", text: "Building your own panel? API access is on the way." },
-  { title: "Real support", text: "Open a ticket or message us on WhatsApp." },
+  { icon: "screen", title: "Everything on one screen", text: "Place an order in a few taps: platform, service, link, quantity, done." },
+  { icon: "naira", title: "Clear prices in naira", text: "See the exact total before you pay. No hidden fees." },
+  { icon: "track", title: "Live order tracking", text: "Pending, in progress, completed. Always visible in your dashboard." },
+  { icon: "refill", title: "Refill on selected services", text: "Services marked with refill are topped up if the count drops within the stated period." },
+  { icon: "api", title: "Reseller API (coming soon)", text: "Building your own panel? API access is on the way." },
+  { icon: "support", title: "Real support", text: "Open a ticket or message us on WhatsApp." },
 ];
 
 const faqs = [
@@ -50,6 +51,7 @@ export default function Home() {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden">
+        <div className="dot-grid pointer-events-none absolute inset-0 opacity-70" />
         <div className="pointer-events-none absolute -top-40 left-1/2 h-[480px] w-[720px] -translate-x-1/2 rounded-full bg-primary/30 blur-[120px]" />
         <div className="relative mx-auto grid max-w-6xl gap-12 px-4 pb-16 pt-16 md:grid-cols-2 md:items-center md:pt-24">
           <div>
@@ -78,6 +80,8 @@ export default function Home() {
           </div>
 
           {/* Dashboard preview */}
+          <div className="relative">
+          <FloatingChips />
           <div className="rounded-2xl border border-border bg-surface p-5 shadow-2xl shadow-primary/10">
             <div className="flex items-center justify-between">
               <div>
@@ -108,16 +112,19 @@ export default function Home() {
             </div>
             <p className="mt-3 text-center text-[11px] text-muted">Preview of the dashboard</p>
           </div>
+          </div>
         </div>
       </section>
 
       {/* Platforms */}
       <section className="border-y border-border bg-surface">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-8 gap-y-3 px-4 py-6 text-sm text-muted">
-          <span className="text-foreground">Services for:</span>
-          {platforms.map((p) => (
-            <span key={p}>{p}</span>
-          ))}
+        <div className="mx-auto max-w-6xl px-4 py-7">
+          <p className="mb-4 text-center text-sm text-muted">Services for the platforms you use</p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {platforms.map((p) => (
+              <PlatformTile key={p} name={p} />
+            ))}
+          </div>
         </div>
       </section>
 
@@ -128,7 +135,10 @@ export default function Home() {
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s) => (
             <div key={s.n} className="rounded-2xl border border-border bg-surface p-5">
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-primary font-bold">{s.n}</span>
+              <div className="flex items-center justify-between">
+                <StepIcon name={s.icon} />
+                <span className="text-4xl font-bold text-border">{s.n}</span>
+              </div>
               <h3 className="mt-4 font-semibold">{s.title}</h3>
               <p className="mt-1 text-sm text-muted">{s.text}</p>
             </div>
@@ -164,10 +174,30 @@ export default function Home() {
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
             <div key={f.title} className="rounded-2xl border border-border bg-surface p-5">
-              <h3 className="font-semibold">{f.title}</h3>
+              <FeatureIcon name={f.icon} />
+              <h3 className="mt-3 font-semibold">{f.title}</h3>
               <p className="mt-1 text-sm text-muted">{f.text}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Growth illustration */}
+      <section className="mx-auto max-w-6xl px-4 pt-20">
+        <div className="grid items-center gap-8 overflow-hidden rounded-3xl border border-border bg-surface p-6 md:grid-cols-2 md:p-10">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Start small. Scale when it works.</h2>
+            <p className="mt-3 text-muted">
+              Order a small batch first, see how it lands, then scale up from the same wallet. Every order is tracked in your dashboard from pending to completed.
+            </p>
+            <Link href="/signup" className="mt-6 inline-block rounded-xl bg-accent px-6 py-3 font-semibold text-black transition hover:brightness-95">
+              Create free account
+            </Link>
+          </div>
+          <div>
+            <GrowthIllustration />
+            <p className="mt-1 text-center text-[11px] text-muted">Illustration</p>
+          </div>
         </div>
       </section>
 
