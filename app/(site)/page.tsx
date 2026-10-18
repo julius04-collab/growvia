@@ -120,7 +120,7 @@ export default function Home() {
       <section className="border-y border-border bg-surface">
         <div className="mx-auto max-w-6xl px-4 py-7">
           <p className="mb-4 text-center text-sm text-muted">Services for the platforms you use</p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
+          <div className="mx-auto grid max-w-md grid-cols-3 gap-2.5 sm:flex sm:max-w-none sm:flex-wrap sm:items-center sm:justify-center sm:gap-3">
             {platforms.map((p) => (
               <PlatformTile key={p} name={p} />
             ))}

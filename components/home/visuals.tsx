@@ -43,11 +43,11 @@ const tiles: Record<string, [string, string]> = {
 export function PlatformTile({ name }: { name: string }) {
   const [label, color] = tiles[name] ?? [name.slice(0, 2).toUpperCase(), "#8a8aa3"];
   return (
-    <span className="flex items-center gap-2.5 rounded-xl border border-border bg-surface-2 py-2 pl-2 pr-4">
+    <span className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-surface-2 px-2 py-3 text-center sm:flex-row sm:gap-2.5 sm:py-2 sm:pl-2 sm:pr-4 sm:text-left">
       <span className="grid h-8 w-8 place-items-center rounded-lg text-[11px] font-bold" style={{ backgroundColor: `${color}26`, color }}>
         {label}
       </span>
-      <span className="text-sm font-medium text-foreground">{name}</span>
+      <span className="text-xs font-medium text-foreground sm:text-sm">{name}</span>
     </span>
   );
 }
